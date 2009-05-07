@@ -19,7 +19,6 @@ module SimpleCaptcha #:nodoc
     #   redirect_to :action => "myaction"
     #  end
     def simple_captcha_valid?
-      return true if RAILS_ENV == 'test'
       if params[:captcha]
         data = simple_captcha_value
         result = data == params[:captcha].delete(" ").upcase
