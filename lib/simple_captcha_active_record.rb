@@ -6,40 +6,47 @@ module SimpleCaptcha #:nodoc
     # To implement model based simple captcha use this method in the model as...
     #
     #  class User < ActiveRecord::Base
-    #
-    #    apply_simple_captcha :message => "my customized message"
-    #    validate_on_create :captcha_is_valid?
+    #    validates_captcha :message => "Are you a bot?"
     #  end
+    # 
+    # Configuration options:
     #
-    # Alternatively you can write your own
+    #   * :add_to_base - Specifies if error should be added to base or captcha field. defaults to false.
+    #   * :message - A custom error message (default is: "Secret Code did not match with the Image")
+    #   * :on - Specifies when this validation is active (default is :save, other options :create, :update)
+    #   * :if - Specifies a method, proc or string to call to determine if the validation should occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }). The method, proc or string should return or evaluate to a true or false value.
+    #   * :unless - Specifies a method, proc or string to call to determine if the validation should not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }). The method, proc or string should return or evaluate to a true or false value.
+    
     module ClassMethods
-      def apply_simple_captcha(options = {})
-        instance_variable_set(:@add_to_base, options[:add_to_base])
-        instance_variable_set(:@captcha_invalid_message, options[:message] || "Secret Code did not match with the Image")
+      def validates_captcha(options = {})
+        configuration = { :on      => :save,
+                          :message => "Secret Code did not match with the Image" }
+        configuration.update(options)
+        
         module_eval do
           include SimpleCaptcha::ConfigTasks
-          attr_accessor :captcha, :captcha_key #, :authenticate_with_captcha
-          # alias_method :valid_without_captcha?, :valid?
-          # alias_method :save_without_captcha, :save
+          attr_accessor :captcha, :captcha_key 
           include SimpleCaptcha::ModelHelpers::InstanceMethods
+          send(validation_method(configuration[:on]), configuration) do |record|
+            if record.captcha_is_valid?
+              true
+            elsif configuration[:add_to_base] 
+              record.errors.add_to_base(configuration[:message]) 
+              false
+            else
+              record.errors.add(:captcha, configuration[:message])
+              false
+            end
+          end
         end
       end
     end
     
     module InstanceMethods
-     def captcha_is_valid?
-        if captcha && captcha.upcase.delete(" ") == simple_captcha_value(captcha_key)
-          true
-        elsif self.class.instance_variable_get(:@add_to_base) == true 
-          self.errors.add_to_base(
-            self.class.instance_variable_get(:@captcha_invalid_message)) 
-          false
-        else
-          self.errors.add(:captcha, 
-            self.class.instance_variable_get(:@captcha_invalid_message))
-          false
-        end
-      end
+      def captcha_is_valid?
+         captcha && 
+           captcha.upcase.delete(" ") == simple_captcha_value(captcha_key)
+      end            
     end
   end
 end
