@@ -18,6 +18,7 @@ module SimpleCaptcha #:nodoc
     #   * :unless - Specifies a method, proc or string to call to determine if the validation should not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }). The method, proc or string should return or evaluate to a true or false value.
     
     module ClassMethods
+      
       def validates_captcha(options = {})
         configuration = { :on      => :save,
                           :message => "Secret Code did not match with the Image" }
@@ -40,13 +41,15 @@ module SimpleCaptcha #:nodoc
           end
         end
       end
+
+      alias_method :apply_simple_captcha, :validates_captcha
+      
     end
     
     module InstanceMethods
       def captcha_is_valid?
-         captcha && 
-           captcha.upcase.delete(" ") == simple_captcha_value(captcha_key)
-      end            
+        captcha && captcha.upcase.delete(" ") == simple_captcha_value(captcha_key)
+      end
     end
   end
 end

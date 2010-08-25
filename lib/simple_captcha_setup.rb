@@ -13,7 +13,8 @@ module SimpleCaptcha #:nodoc
         copy_view_file
         puts "Followup Steps"
         puts "STEP 2 -- run the task 'rake db:migrate'"
-        puts "STEP 3 -- edit the file config/routes.rb to add the route \"map.simple_captcha '/simple_captcha/:action', :controller => 'simple_captcha'\""
+        puts "STEP 3 -- edit the file config/routes.rb to add the route " +
+             "\"map.simple_captcha '/simple_captcha/:action', :controller => 'simple_captcha'\""
       rescue StandardError => e
         p e
       end
