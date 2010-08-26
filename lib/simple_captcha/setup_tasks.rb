@@ -28,7 +28,7 @@ module SimpleCaptcha #:nodoc
       puts %x{ruby script/generate migration create_simple_captcha_data}
       puts "================================DONE==========================================="
     end
-  
+
     def self.migration_source_file
       @version == :old ?
       File.join(File.dirname(__FILE__), "../assets", "migrate", "create_simple_captcha_data_less_than_2.0.rb") :
@@ -37,7 +37,7 @@ module SimpleCaptcha #:nodoc
 
     def self.write_migration_content
       copy_to_path = File.join(RAILS_ROOT, "db", "migrate")
-      migration_filename = 
+      migration_filename =
         Dir.entries(copy_to_path).collect do |file|
           number, *name = file.split("_")
           file if name.join("_") == "create_simple_captcha_data.rb"

@@ -1,10 +1,10 @@
 # Copyright (c) 2008 [Sur http://expressica.com]
 
-module SimpleCaptcha #:nodoc 
+module SimpleCaptcha #:nodoc
   module ControllerHelpers #:nodoc
-    
+
     include ConfigTasks
-    
+
     # This method is to validate the simple captcha in controller.
     # It means when the captcha is controller based i.e. :object has not been passed to the method show_simple_captcha.
     #
@@ -28,6 +28,6 @@ module SimpleCaptcha #:nodoc
         return false
       end
     end
-    
+
   end
 end

@@ -51,6 +51,7 @@ module SimpleCaptcha #:nodoc
         captcha && captcha.upcase.delete(" ") == simple_captcha_value(captcha_key)
       end
     end
+    
   end
 end
 

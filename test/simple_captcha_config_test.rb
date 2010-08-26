@@ -1,8 +1,6 @@
 
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-require 'simple_captcha_config'
-
 class SimpleCaptchaConfigTest < ActiveSupport::TestCase
 
   test 'backend configuration defaults to RMagick' do

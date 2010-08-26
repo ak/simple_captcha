@@ -1,16 +1,34 @@
-# Copyright (c) 2008 [Sur http://expressica.com]
 
-require 'digest/sha1'
+require 'simple_captcha/config_tasks'
+require 'simple_captcha/image_helpers'
+require 'simple_captcha/view_helpers'
+require 'simple_captcha/controller_helpers'
+require 'simple_captcha/model_helpers'
 
-module SimpleCaptcha #:nodoc
+module SimpleCaptcha
 
-  @@image_path = "#{RAILS_ROOT}/vendor/plugins/simple_captcha/assets/images/simple_captcha/"
+  @@image_path = nil
   def self.image_path
-    @@image_path
+    @@image_path ||= "#{RAILS_ROOT}/vendor/plugins/simple_captcha/assets/images/simple_captcha/"
   end
 
   def self.image_path=(image_path)
     @@image_path = image_path
+  end
+
+  @@image_options = {
+      :image_color => 'white',
+      :image_size => '110x30',
+      :text_color => 'black',
+      :text_font => 'arial',
+      :text_size => 22
+  }
+  def self.image_options
+    @@image_options
+  end
+
+  def self.image_options=(image_options)
+    @@image_options.merge! image_options
   end
 
   @@backend = nil
@@ -31,28 +49,6 @@ module SimpleCaptcha #:nodoc
       raise "invalid backend: #{backend} - does not respond to :generate_simple_captcha_image"
     end
     @@backend = backend
-  end
-
-  module ConfigTasks #:nodoc
-
-    private
-    
-      def simple_captcha_image_path #:nodoc
-        SimpleCaptcha.image_path
-      end
-
-      def simple_captcha_key #:nodoc
-        session[:simple_captcha] ||= Digest::SHA1.hexdigest(Time.now.to_s + session.session_id.to_s)
-      end
-
-      def simple_captcha_value(key = simple_captcha_key) #:nodoc
-        SimpleCaptchaData.get_data(key).value rescue nil
-      end
-
-      def simple_captcha_passed!(key = simple_captcha_key) #:nodoc
-        SimpleCaptchaData.remove_data(key)
-      end
-
   end
 
 end

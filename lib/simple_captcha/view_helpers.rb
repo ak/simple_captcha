@@ -97,7 +97,7 @@ module SimpleCaptcha #:nodoc
       text_field_tag(:captcha)
     end
 
-    def set_simple_captcha_data(code_type)
+    def set_simple_captcha_data(code_type = nil)
       key, value = simple_captcha_key, generate_simple_captcha_data(code_type)
       data = SimpleCaptchaData.get_data(key)
       data.value = value
@@ -105,9 +105,9 @@ module SimpleCaptcha #:nodoc
       key
     end
  
-    def generate_simple_captcha_data(code)
+    def generate_simple_captcha_data(code_type = nil)
       value = ''
-      case code
+      case code_type
       when 'numeric'
         6.times{value << (48 + rand(10)).chr}
       else
