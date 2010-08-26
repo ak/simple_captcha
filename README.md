@@ -134,6 +134,9 @@ without storing on the filesystem.
         :text_size => 22
     } # these are the defaults
 
+  Please note that some image options such as color might change when using
+  some of the pre-built captcha image styles available.
+
 
 ### Usage
 
@@ -189,7 +192,7 @@ Options & Examples
       7) distorted_black
       8) almost_invisible
 
-      Default style is 'simply_blue'.
+      See the included samples http://github.com/kares/simple_captcha/samples.
       You can also specify 'random' to select the random image style.
 
 
