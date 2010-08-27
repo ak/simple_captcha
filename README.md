@@ -25,7 +25,7 @@ command line similar to *mini_magick* but supports a richer API familiar to
 
 This version of SimpleCaptcha introduces a notion of a configurable backend for
 generating captcha images. The default backend behaves depending on RMagick as
-the original SimpleCaptcha version, but one might switch to another built-in
+the original SimpleCaptcha version, but one might switch to another (built-in)
 quick_magick backend as required (or create it's own backend if in the need).
 
 
@@ -45,8 +45,11 @@ accepts the usual :if, :unless and :on options.
 This version does not bypass the validation if in test mode. It behaves the
 same in all environments, allowing you to actually test it.
 
-I have written some tests (the original didn't have any) as part of another
-project. If I have the time I will include them here.
+To disable the validations in test mode, You should now state it explicitly:
+
+    class User < ActiveRecord::Base
+      validates_captcha :unless => lambda { Rails.env.test? }
+    end
 
 
 
