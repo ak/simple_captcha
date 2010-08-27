@@ -24,7 +24,8 @@ Rake::RDocTask.new(:rdoc) do |rdoc|
 end
 
 desc 'Generate captcha image samples.'
-Rake::TestTask.new(:generate_samples) do |t|
+task :generate_samples do
+  
   $:.unshift File.join(File.dirname(__FILE__), 'lib')
 
   require 'action_view'
@@ -35,7 +36,7 @@ Rake::TestTask.new(:generate_samples) do |t|
     require 'quick_magick'
     require 'simple_captcha/quick_magick_backend'
     SimpleCaptcha.backend = :quick_magick
-  rescue nil
+  rescue
     require 'simple_captcha/r_magick_backend'
     SimpleCaptcha.backend = :RMagick
   end
