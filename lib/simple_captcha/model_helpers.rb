@@ -29,9 +29,9 @@ module SimpleCaptcha #:nodoc
           attr_accessor :captcha, :captcha_key 
           include SimpleCaptcha::ModelHelpers::InstanceMethods
           send(validation_method(configuration[:on]), configuration) do |record|
-            if record.class.captcha_validation_disabled?
-              true
-            elsif record.captcha_is_valid?
+            #if record.class.captcha_validation_disabled?
+            #  true
+            if record.captcha_is_valid?
               true
             elsif configuration[:add_to_base] 
               record.errors.add_to_base(configuration[:message]) 
@@ -45,32 +45,29 @@ module SimpleCaptcha #:nodoc
       end
       alias_method :apply_simple_captcha, :validates_captcha # backward compatibility
 
-      def captcha_validation_disabled?
-        val = Thread.current[:captcha_validation_disabled]
-        val && val[self.name]
-      end
-
-      def disable_captcha_validation(&block)
-        toggle_captcha_validation(true, &block)
-      end
-
-      def enable_captcha_validation(&block)
-        toggle_captcha_validation(false, &block)
-      end
-
-      private
-
-        def toggle_captcha_validation(flag)
-          val = Thread.current[:captcha_validation_disabled]
-          val = (Thread.current[:captcha_validation_disabled] = {}) unless val
-          prev = val[self.name] # the class name
-          val[self.name] = flag
-          if block_given?
-            outcome = yield
-            val[self.name] = prev
-          end
-          outcome
-        end
+#      def captcha_validation_disabled?
+#        @_captcha_validation_disabled
+#      end
+#
+#      def disable_captcha_validation(&block)
+#        toggle_captcha_validation(true, &block)
+#      end
+#
+#      def enable_captcha_validation(&block)
+#        toggle_captcha_validation(false, &block)
+#      end
+#
+#      private
+#
+#        def toggle_captcha_validation(flag)
+#          prev = @_captcha_validation_disabled
+#          @_captcha_validation_disabled = flag
+#          if block_given?
+#            outcome = yield
+#            @_captcha_validation_disabled = prev
+#          end
+#          outcome
+#        end
 
     end
     

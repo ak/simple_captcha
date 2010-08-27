@@ -20,66 +20,80 @@ ActiveRecord::Base.silence do
   end
 end
 
-class UserWithCaptcha < ActiveRecord::Base
-  set_table_name 'users'
-
-  validates_captcha
-end
-
-class InheritedUser < UserWithCaptcha
-end
-
 class SimpleCaptchaModelTest < ActiveSupport::TestCase
+
+  CAPTCHA_DISABLED = false
+
+  class UserWithCaptcha < ActiveRecord::Base
+    set_table_name 'users'
+
+    validates_captcha :unless => lambda { SimpleCaptchaModelTest::CAPTCHA_DISABLED }
+  end
+
+  class InheritedUser < UserWithCaptcha
+  end
 
   test 'captcha validations run by default' do
     user = UserWithCaptcha.new
     assert ! user.valid?
   end
 
-  test 'captcha validations might be disabled for class' do
+  test 'captcha validations is skipped when condition is met' do
     user = UserWithCaptcha.new
+    assert ! user.valid?
     begin
-      UserWithCaptcha.disable_captcha_validation
+      SimpleCaptchaModelTest.const_set(:CAPTCHA_DISABLED, true)
       assert user.valid?
       assert UserWithCaptcha.new.valid?
     ensure
-      UserWithCaptcha.enable_captcha_validation
+      SimpleCaptchaModelTest.const_set(:CAPTCHA_DISABLED, false)
     end
   end
 
-  test 'captcha validations might be disabled for block' do
-    user = UserWithCaptcha.new
-    UserWithCaptcha.disable_captcha_validation do
-      assert user.valid?
-      assert UserWithCaptcha.new.valid?
-    end
-  end
+#  test 'captcha validations might be disabled for class' do
+#    user = UserWithCaptcha.new
+#    begin
+#      UserWithCaptcha.disable_captcha_validation
+#      assert user.valid?
+#      assert UserWithCaptcha.new.valid?
+#    ensure
+#      UserWithCaptcha.enable_captcha_validation
+#    end
+#  end
+#
+#  test 'captcha validations might be disabled for block' do
+#    user = UserWithCaptcha.new
+#    UserWithCaptcha.disable_captcha_validation do
+#      assert user.valid?
+#      assert UserWithCaptcha.new.valid?
+#    end
+#  end
+#
+#  test 'disabling validations is not inherited' do
+#    UserWithCaptcha.disable_captcha_validation do
+#      assert UserWithCaptcha.new.valid?
+#      assert ! InheritedUser.new.valid?
+#    end
+#  end
+#
+#  test 'disabled captcha validations get enabled for block' do
+#    user = UserWithCaptcha.new
+#    begin
+#      assert ! user.valid?
+#      UserWithCaptcha.disable_captcha_validation
+#      assert user.valid?
+#      UserWithCaptcha.enable_captcha_validation do
+#        assert ! user.valid?
+#        assert ! UserWithCaptcha.new.valid?
+#      end
+#      assert user.valid?
+#      assert UserWithCaptcha.new.valid?
+#    ensure
+#      UserWithCaptcha.enable_captcha_validation
+#    end
+#  end
 
-  test 'disabling validations is not inherited' do
-    UserWithCaptcha.disable_captcha_validation do
-      assert UserWithCaptcha.new.valid?
-      assert ! InheritedUser.new.valid?
-    end
-  end
-
-  test 'disabled captcha validations get enabled for block' do
-    user = UserWithCaptcha.new
-    begin
-      assert ! user.valid?
-      UserWithCaptcha.disable_captcha_validation
-      assert user.valid?
-      UserWithCaptcha.enable_captcha_validation do
-        assert ! user.valid?
-        assert ! UserWithCaptcha.new.valid?
-      end
-      assert user.valid?
-      assert UserWithCaptcha.new.valid?
-    ensure
-      UserWithCaptcha.enable_captcha_validation
-    end
-  end
-
-  test 'passing validation for captcha is memoized 1' do
+  test 'captcha validation outcome is kept on multiple calls 1' do
     SimpleCaptchaData.create! :key => '1234567890', :value => 'ABCDEF'
 
     user = UserWithCaptcha.new :name => 'U1', :captcha => 'XYZ', :captcha_key => '1234567890'
@@ -91,7 +105,7 @@ class SimpleCaptchaModelTest < ActiveSupport::TestCase
     assert ! user.valid?
   end
 
-  test 'passing validation for captcha is memoized 2' do
+  test 'captcha validation outcome is kept on multiple calls 2' do
     SimpleCaptchaData.create! :key => '1234567890', :value => 'ABCDEF'
 
     user = UserWithCaptcha.new :name => 'U1', :captcha => 'ABCDEF', :captcha_key => '1234567890'
