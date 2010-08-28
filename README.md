@@ -1,15 +1,15 @@
 
-This code is a fork http://github.com/eshopworks/simple_captcha
+This code is a fork <http://github.com/eshopworks/simple_captcha>
 
-Website: http://expressica.com/simple_captcha/
-SVN: svn://rubyforge.org/var/svn/expressica/plugins/simple_captcha
+Website: <http://expressica.com/simple_captcha/>
 
-Copyright (c) 2008 [Sur http://expressica.com]
+Copyright (c) 2008 [Sur <http://expressica.com>]
 
 Author: Sur
-Original Contributors: http://vinsol.com/team, Kei Kusakari, nap
 
-"Update" Contributors: Marek de Heus, Karol Bucek
+Original Contributors: <http://vinsol.com/team>, Kei Kusakari, nap
+
+"Update" Contributors: Marek de Heus, [Karol Bucek](https://log.kares.org)
 
 
 Main Updates
@@ -20,19 +20,21 @@ Support for a lighter "backend" such as **mini_magick** seems desired, however
 existing images (it's API cannot create an image from scratch).
 Besides **RMagick** doesn't play well with ruby platforms such as JRuby.
 Luckily, there still is an option called **quick_magick** that works on the
-command line similar to *mini_magick* but supports a richer API familiar to
+command line similar to **mini_magick** but supports a richer API familiar to
 **RMagick** users.
 
 This version of SimpleCaptcha introduces a notion of a configurable backend for
-generating captcha images. The default backend behaves depending on RMagick as
-the original SimpleCaptcha version, but one might switch to another (built-in)
-quick_magick backend as required (or create it's own backend if in the need).
+generating captcha images. The default backend behaves, depending on RMagick, as
+the original plugin, but one might switch to another (built-in) quick_magick
+backend as required (or create it's own backend if in the need).
+
+See SETUP / STEP 5 bellow for how to configure the backend.
 
 
 Other Updates
 -------------
 
-Merged changes from http://github.com/mdh/simple_captcha
+Merged changes from <http://github.com/mdh/simple_captcha>
 
 This forked version is different in a few ways. I changed it so that the
 captcha validation is just that: another validation. This makes it much
@@ -63,16 +65,16 @@ provides the backward compatibility with previous versions of Rails.
   
 ### Features
   
- -> Zero FileSystem usage(secret code moved to db-store and image storage removed).
- -> Provides various image styles.
- -> Provides three level of complexity of images.
- -> Works absolutely fine in distributed environment(session and db based implementation
-    works fine in distributed environment).
- -> Implementation is as easy as just writing a single line in your view.
-    `<%= show_simple_captcha %>` within the 'form' tags.
- -> Flexible DOM and CSS handling(There is a separate view partial for rendering 
-    SimpleCaptcha DOM elements).
- -> Automated removal of 1 hour old unmatched simple_captcha data.
+ - Zero FileSystem usage(secret code moved to db-store and image storage removed).
+ - Provides various image styles.
+ - Provides three level of complexity of images.
+ - Works absolutely fine in distributed environment(session and db based implementation
+   works fine in distributed environment).
+ - Implementation is as easy as just writing a single line in your view.
+   `<%= show_simple_captcha %>` within the 'form' tags.
+ - Flexible DOM and CSS handling(There is a separate view partial for rendering 
+   SimpleCaptcha DOM elements).
+ - Automated removal of 1 hour old unmatched simple_captcha data.
 
 ### Pre-Requisite
 
@@ -195,7 +197,7 @@ Options & Examples
       7) distorted_black
       8) almost_invisible
 
-      See the included samples http://github.com/kares/simple_captcha/samples.
+      See the included samples <http://github.com/kares/simple_captcha/samples>.
       You can also specify 'random' to select the random image style.
 
 
