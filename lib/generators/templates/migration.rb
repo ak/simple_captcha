@@ -1,12 +1,11 @@
-# Copyright (c) 2008 [Sur http://expressica.com]
-
 class CreateSimpleCaptchaData < ActiveRecord::Migration
   def self.up
     create_table :simple_captcha_data do |t|
       t.string :key, :limit => 40
-      t.string :value, :limit => 6
+      t.string :value, :limit => 20
       t.timestamps
     end
+    add_index :simple_captcha_data, :key
   end
 
   def self.down

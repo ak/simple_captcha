@@ -2,30 +2,29 @@
 
 module SimpleCaptcha #:nodoc
   module ImageHelpers #:nodoc
-    
-    include ConfigTasks
 
     def generate_simple_captcha_image(options = {})
       options = SimpleCaptcha.image_options.merge(options)
-      captcha_text = simple_captcha_value options.delete(:simple_captcha_key)
+      key = options.delete(:simple_captcha_key)
+      captcha_text = SimpleCaptcha::CaptchaUtils.simple_captcha_value(key)
       options[:captcha_text] = captcha_text
       options[:distortion] = distortion(options[:distortion])
       options[:image_style] = image_style(options[:image_style])
       SimpleCaptcha.backend.generate_simple_captcha_image(options)
     end
 
-    private
+    IMAGE_STYLES = [
+      'embosed_silver',
+      'simply_red',
+      'simply_green',
+      'simply_blue',
+      'distorted_black',
+      'all_black',
+      'charcoal_grey',
+      'almost_invisible'
+    ]
 
-      IMAGE_STYLES = [
-        'embosed_silver',
-        'simply_red',
-        'simply_green',
-        'simply_blue',
-        'distorted_black',
-        'all_black',
-        'charcoal_grey',
-        'almost_invisible'
-      ]
+    private
 
       def image_style(key)
         return IMAGE_STYLES[rand(IMAGE_STYLES.length)] if key == 'random'

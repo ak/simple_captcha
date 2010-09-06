@@ -3,7 +3,7 @@
 module SimpleCaptcha #:nodoc
   module ControllerHelpers #:nodoc
 
-    include ConfigTasks
+    include SimpleCaptcha::CaptchaUtils
 
     # This method is to validate the simple captcha in controller.
     # It means when the captcha is controller based i.e. :object has not been passed to the method show_simple_captcha.
@@ -19,13 +19,12 @@ module SimpleCaptcha #:nodoc
     #   redirect_to :action => "myaction"
     #  end
     def simple_captcha_valid?
-      if params[:captcha]
-        data = simple_captcha_value
-        result = data == params[:captcha].delete(" ").upcase
+      if captcha = params[:captcha]
+        result = simple_captcha_matches?(captcha)
         simple_captcha_passed! if result
-        return result
+        result
       else
-        return false
+        false
       end
     end
 

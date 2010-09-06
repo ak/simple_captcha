@@ -16,7 +16,7 @@ module SimpleCaptcha #:nodoc
     #   * :on - Specifies when this validation is active (default is :save, other options :create, :update)
     #   * :if - Specifies a method, proc or string to call to determine if the validation should occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }). The method, proc or string should return or evaluate to a true or false value.
     #   * :unless - Specifies a method, proc or string to call to determine if the validation should not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }). The method, proc or string should return or evaluate to a true or false value.
-    
+    #
     module ClassMethods
       
       def validates_captcha(options = {})
@@ -24,62 +24,83 @@ module SimpleCaptcha #:nodoc
                           :message => "Secret Code did not match with the Image" }
         configuration.update(options)
 
-        module_eval do
-          include SimpleCaptcha::ConfigTasks
-          attr_accessor :captcha, :captcha_key 
-          include SimpleCaptcha::ModelHelpers::InstanceMethods
-          send(validation_method(configuration[:on]), configuration) do |record|
-            #if record.class.captcha_validation_disabled?
-            #  true
-            if record.captcha_is_valid?
-              true
-            elsif configuration[:add_to_base] 
-              record.errors.add_to_base(configuration[:message]) 
-              false
-            else
-              record.errors.add(:captcha, configuration[:message])
-              false
-            end
+        attr_accessor :captcha, :captcha_key 
+        include SimpleCaptcha::ModelHelpers::InstanceMethods
+        send(validation_method(configuration[:on]), configuration) do |record|
+          if ! record.validates_captcha?
+            true
+          elsif record.captcha_is_valid?
+            true
+          elsif configuration[:add_to_base]
+            record.errors.add_to_base(configuration[:message])
+            false
+          else
+            record.errors.add(:captcha, configuration[:message])
+            false
           end
         end
       end
-      alias_method :apply_simple_captcha, :validates_captcha # backward compatibility
 
-#      def captcha_validation_disabled?
-#        @_captcha_validation_disabled
-#      end
-#
-#      def disable_captcha_validation(&block)
-#        toggle_captcha_validation(true, &block)
-#      end
-#
-#      def enable_captcha_validation(&block)
-#        toggle_captcha_validation(false, &block)
-#      end
-#
-#      private
-#
-#        def toggle_captcha_validation(flag)
-#          prev = @_captcha_validation_disabled
-#          @_captcha_validation_disabled = flag
-#          if block_given?
-#            outcome = yield
-#            @_captcha_validation_disabled = prev
-#          end
-#          outcome
-#        end
+      def apply_simple_captcha(options = {}) # for backward compatibility
+        outcome = validates_captcha(options)
+        self.validates_captcha = false
+        include SimpleCaptcha::ModelHelpers::SaveWithCaptcha
+        outcome
+      end
+
+      def validates_captcha?
+        defined?(@_validates_captcha) ? @_validates_captcha : true
+      end
+
+      def validates_captcha=(validates)
+        @_validates_captcha = validates
+      end
 
     end
     
     module InstanceMethods
+
       def captcha_is_valid?
-        captcha && captcha.upcase.delete(" ") == simple_captcha_value(captcha_key)
+        SimpleCaptcha::CaptchaUtils.simple_captcha_matches?(captcha, captcha_key)
+      end
+
+      def validates_captcha?
+        if defined?(@_validates_captcha) && ! @_validates_captcha.nil?
+          @_validates_captcha
+        else
+          self.class.validates_captcha?
+        end
+      end
+
+      def validates_captcha(flag = true)
+        prev = @_validates_captcha
+        @_validates_captcha = flag
+        if block_given?
+          outcome = yield
+          @_validates_captcha = prev
+        end
+        outcome
+      end
+
+    end
+
+    module SaveWithCaptcha
+
+      if defined? ActiveModel && ActiveModel::VERSION::MAJOR >= 3
+
+        def save_with_captcha(options = {})
+          options[:validate] = true unless options.has_key?(:validate)
+          validates_captcha(true) { save(options) }
+        end
+
+      else
+
+        def save_with_captcha
+          validates_captcha(true) { save }
+        end
+
       end
     end
-    
-  end
-end
 
-ActiveRecord::Base.module_eval do
-  extend SimpleCaptcha::ModelHelpers::ClassMethods
+  end
 end

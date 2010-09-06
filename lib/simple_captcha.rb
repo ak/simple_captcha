@@ -1,20 +1,29 @@
 
-require 'simple_captcha/config_tasks'
+require 'simple_captcha/captcha_utils'
 require 'simple_captcha/image_helpers'
-require 'simple_captcha/view_helpers'
 require 'simple_captcha/controller_helpers'
 require 'simple_captcha/model_helpers'
+require 'simple_captcha/view_helpers'
+
+ActiveRecord::Base.extend SimpleCaptcha::ModelHelpers::ClassMethods
+ActionView::Base.send :include, SimpleCaptcha::ViewHelpers
+
+if Rails.version < '2.3.0'
+  load_paths = ActiveSupport::Dependencies.load_paths
+  load_paths << File.expand_path('../app/controllers', File.dirname(__FILE__))
+  load_paths << File.expand_path('../app/models', File.dirname(__FILE__))
+end
 
 module SimpleCaptcha
 
-  @@image_path = nil
-  def self.image_path
-    @@image_path ||= "#{RAILS_ROOT}/vendor/plugins/simple_captcha/assets/images/simple_captcha/"
-  end
-
-  def self.image_path=(image_path)
-    @@image_path = image_path
-  end
+#  @@image_path = nil
+#  def self.image_path
+#    @@image_path ||= "#{RAILS_ROOT}/vendor/plugins/simple_captcha/assets/images/simple_captcha/"
+#  end
+#
+#  def self.image_path=(image_path)
+#    @@image_path = image_path
+#  end
 
   @@image_options = {
       :image_color => 'white',
@@ -27,8 +36,21 @@ module SimpleCaptcha
     @@image_options
   end
 
-  def self.image_options=(image_options)
-    @@image_options.merge! image_options
+  def self.image_options=(options)
+    @@image_options.merge! options
+  end
+
+  @@captcha_length = nil
+  def self.captcha_length
+    @@captcha_length ||= 6
+  end
+
+  def self.captcha_length=(length)
+    if length
+      raise "invalid captcha length < 0 : #{length}" if length <= 0
+      raise "invalid captcha length > 20 : #{length}" if length > 20
+    end
+    @@captcha_length = length
   end
 
   @@backend = nil
@@ -43,12 +65,13 @@ module SimpleCaptcha
       backend_const = const_get(backend + 'Backend') rescue nil
       backend_const = const_get(backend) rescue nil unless backend_const
       raise "unsupported backend: #{backend}" unless backend_const
-      backend = backend_const
+    else
+      backend_const = backend
     end
-    unless backend.respond_to?(:generate_simple_captcha_image)
-      raise "invalid backend: #{backend} - does not respond to :generate_simple_captcha_image"
+    unless backend_const.respond_to?(:generate_simple_captcha_image)
+      raise "invalid backend: #{backend_const} - does not respond to :generate_simple_captcha_image"
     end
-    @@backend = backend
+    @@backend = backend_const
   end
 
 end

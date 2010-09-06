@@ -31,7 +31,7 @@ task :generate_samples do
   require 'action_view'
   require 'active_record'
   require 'simple_captcha'
-  # prefer quick_magick (works on JRuby as well) :
+  # prefer quick_magick (works with JRuby) :
   begin
     require 'quick_magick'
     require 'simple_captcha/quick_magick_backend'
@@ -49,7 +49,7 @@ task :generate_samples do
   end
 
   samples_dir = File.join(File.dirname(__FILE__), 'samples')
-  image_styles = %w{ embosed_silver simply_red simply_green simply_blue distorted_black all_black charcoal_grey almost_invisible }
+  image_styles = SimpleCaptcha::ImageHelpers::IMAGE_STYLES
 
   (image_styles + [ nil ]).each do |image_style|
     simple_captcha_img = generate_simple_captcha_image(:image_style => image_style)

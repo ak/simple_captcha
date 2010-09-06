@@ -28,7 +28,7 @@ generating captcha images. The default backend behaves, depending on RMagick, as
 the original plugin, but one might switch to another (built-in) quick_magick
 backend as required (or create it's own backend if in the need).
 
-See SETUP / STEP 5 bellow for how to configure the backend.
+See SETUP / STEP 4 bellow for how to configure the backend.
 
 
 Other Updates
@@ -53,6 +53,20 @@ To disable the validations in test mode, You should now state it explicitly:
       validates_captcha :unless => lambda { Rails.env.test? }
     end
 
+NOTE: This will validate captcha every-time You do a `user.save` !
+
+
+Old Validation
+--------------
+
+A backward compatible validation for Your model classes is as well available.
+The original captcha validation code was different from standard validation in
+a way that it did not validate the captcha on "regular" `save` calls, one has
+to explicitly state captcha validation is desired by calling `save_with_captcha`.
+
+    class User < ActiveRecord::Base
+      apply_simple_captcha
+    end
 
 
 SimpleCaptcha
@@ -93,14 +107,14 @@ After installation, follow these simple steps to setup the plugin.
 The setup will depend on the version of rails your application is using.
 
 #### STEP 1
-  
-  for rails >= 2.0
 
-    rake simple_captcha:setup
-    
-  for rails < 2.0
+ for Rails 2.x :
 
-    rake simple_captcha:setup_old
+    script/generate simple_captcha
+
+ for Rails 3.x :
+
+    rails generate simple_captcha
 
 #### STEP 2
 
@@ -108,7 +122,7 @@ The setup will depend on the version of rails your application is using.
 
 #### STEP 3
   
-  add the following code in the file `config/routes.rb`
+  add the following code into `config/routes.rb` (required only for Rails 2.x)
     
     ActionController::Routing::Routes.draw do |map|
       map.simple_captcha '/simple_captcha/:action', :controller => 'simple_captcha'
@@ -117,15 +131,7 @@ The setup will depend on the version of rails your application is using.
 This is a mandatory route used for rendering the simple_captcha image on the fly
 without storing on the filesystem.
 
-#### STEP 4
-  
-  add the following line in the file `app/controllers/application.rb`
-    
-    ApplicationController < ActionController::Base
-      include SimpleCaptcha::ControllerHelpers
-    end
-
-#### STEP 5 (Optional)
+#### STEP 4 (Optional)
 
   configure simple_captcha e.g. in `app/config/initializers/simple_captcha.rb`
 
@@ -146,8 +152,15 @@ without storing on the filesystem.
 ### Usage
 
 #### Controller Based
-  
-  In the view file within the form tags add this code
+
+  Include `SimpleCaptcha::ControllerHelpers` into Your captcha validating
+  controller or put the include into `app/controllers/application.rb`
+
+    ApplicationController < ActionController::Base
+      include SimpleCaptcha::ControllerHelpers
+    end
+
+  in the view file within the form tags add this code
     
     <%= show_simple_captcha %>
     
@@ -169,7 +182,14 @@ without storing on the filesystem.
   and in the model class add this code
 
     class User < ActiveRecord::Base
-      validates_captcha :on => :create
+      validates_captcha :on => :create, :message => 'invalid captcha'
+    end
+
+  or if You prefer the old version which doesn't trigger the captcha
+  validation on `save` (one have to call `save_with_captcha`)
+
+    class User < ActiveRecord::Base
+      apply_simple_captcha :message => I18n.t(:'invalid_captcha')
     end
 
 
@@ -270,7 +290,7 @@ Options & Examples
       example
       -------
       class User < ActiveRecord::Base
-        validates_captcha
+        apply_simple_captcha # the "old" way using save_with_captcha
       end
 
       example

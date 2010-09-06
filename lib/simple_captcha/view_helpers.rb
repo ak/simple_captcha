@@ -2,8 +2,8 @@
 
 module SimpleCaptcha #:nodoc
   module ViewHelpers #:nodoc
-    
-    include ConfigTasks
+
+    include SimpleCaptcha::CaptchaUtils
 
     # Simple Captcha is a very simplified captcha.
     #
@@ -67,58 +67,62 @@ module SimpleCaptcha #:nodoc
     #
     # Find more detailed examples with sample images here on my blog http://EXPRESSICA.com
     #
-    # All Feedbacks/CommentS/Issues/Queries are welcome.
-    def show_simple_captcha(options={})
-      options[:field_value] = set_simple_captcha_data(options[:code_type])
-      @simple_captcha_options = 
-        {:image => simple_captcha_image(options),
-         :label => options[:label] || "(type the code from the image)",
-         :field => simple_captcha_field(options)}
-      render :partial => 'simple_captcha/simple_captcha'
+    # All Feedbacks/Comments/Issues/Queries are welcome.
+    def show_simple_captcha(options = {})
+      simple_captcha_key = self.simple_captcha_key
+      options[:field_value] = set_simple_captcha_data(simple_captcha_key, options[:code_type])
+      simple_captcha_options = {
+         :image => simple_captcha_image(simple_captcha_key, options),
+         :label => options[:label] || "(type the code from the image)", # TODO label
+         :field => simple_captcha_field(options)
+      }
+      render :partial => 'simple_captcha/simple_captcha', 
+             :locals => { :simple_captcha_options => simple_captcha_options }
     end
 
     private
 
-    def simple_captcha_image(options={})
-      url = 
-        simple_captcha_url(
-          :action => 'simple_captcha',
-          :simple_captcha_key => simple_captcha_key,
-          :image_style => options[:image_style] || '', 
-          :distortion => options[:distortion] || '',
-          :time => Time.now.to_i)
-      "<img src='#{url}' alt='simple_captcha.jpg' />"
-    end
-    
-    def simple_captcha_field(options={})
-      options[:object] ?
-      text_field(options[:object], :captcha, :value => '') +
-      hidden_field(options[:object], :captcha_key, {:value => options[:field_value]}) :
-      text_field_tag(:captcha)
-    end
+      def simple_captcha_image(simple_captcha_key, options = {})
+        url = simple_captcha_url(
+            :action => 'simple_captcha',
+            :simple_captcha_key => simple_captcha_key,
+            :image_style => options[:image_style] || '',
+            :distortion => options[:distortion] || '',
+            :time => Time.now.to_i
+        )
 
-    def set_simple_captcha_data(code_type = nil)
-      key, value = simple_captcha_key, generate_simple_captcha_data(code_type)
-      data = SimpleCaptchaData.get_data(key)
-      data.value = value
-      data.save
-      key
-    end
- 
-    def generate_simple_captcha_data(code_type = nil)
-      value = ''
-      case code_type
-      when 'numeric'
-        6.times{value << (48 + rand(10)).chr}
-      else
-        6.times{value << (65 + rand(26)).chr}
+        img = "<img src='#{url}' alt='captcha' />"
+        img = img.html_safe if img.respond_to? :html_safe
+        img
       end
-      return value
-    end
- 
-  end
-end
 
-ActionView::Base.module_eval do
-  include SimpleCaptcha::ViewHelpers
+      def simple_captcha_field(options = {})
+        if object = options[:object]
+          text_field(object, :captcha, :value => '', :autocomplete => 'off') +
+          hidden_field(object, :captcha_key, {:value => options[:field_value]})
+        else
+          text_field_tag(:captcha, nil, :autocomplete => 'off')
+        end
+      end
+
+      def set_simple_captcha_data(simple_captcha_key, code_type = nil)
+        key, value = simple_captcha_key, generate_simple_captcha_data(code_type)
+        data = SimpleCaptchaData.get_data(key)
+        data.value = value
+        data.save!
+        key
+      end
+
+      def generate_simple_captcha_data(code_type = nil)
+        value = ''
+        case code_type
+        when 'numeric'
+          SimpleCaptcha.captcha_length.times{ value << (48 + rand(10)).chr }
+        else
+          SimpleCaptcha.captcha_length.times{ value << (65 + rand(26)).chr }
+        end
+        value
+      end
+
+  end
 end
