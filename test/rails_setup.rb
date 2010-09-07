@@ -4,8 +4,7 @@ version =
   if ARGV.find { |opt| /RAILS_VERSION=([\d\.]+)/ =~ opt }
     $~[1]
   else
-    # rake test RAILS_VERSION=2.3.5
-    ENV['RAILS_VERSION']
+    ENV['RAILS_VERSION'] # rake test RAILS_VERSION=2.3.5
   end
 
 if version
@@ -31,6 +30,26 @@ require 'active_record'
 
 require 'action_view'
 require 'action_controller'
+
+if version >= '3.0.0'
+
+  require 'rails'
+  require 'rails/all'
+
+  module SimpleCaptcha
+    class Application < Rails::Application
+      config.active_support.deprecation = :stderr
+      paths.config.database File.expand_path('config/database.yml', File.dirname(__FILE__))
+    end
+  end
+
+else
+
+  ActiveRecord::Base.configurations = { 'test' => {
+    'adapter' => 'sqlite3', 'database' => ':memory:'
+  }}
+
+end
 
 module Rails
   class << self
@@ -80,24 +99,9 @@ module Rails
   end
 end
 
-#if version >= '3.0.0'
-#
-#  require 'rails'
-#  require 'rails/all'
-#
-#  Rails.env = 'test'
-#
-#  module SimpleCaptcha
-#    class Application < Rails::Application
-#      config.active_support.deprecation = :stdout
-#      paths.config.database 'test/config/database.yml'
-#    end
-#  end
-#
-#end
-
 # Make double-sure the RAILS_ENV is set to test :
 silence_warnings { RAILS_ENV = "test" }
+Rails.env = 'test' if Rails.respond_to?(:env=)
 FileUtils.mkdir_p("#{File.dirname(__FILE__)}/public")
 silence_warnings { RAILS_ROOT = File.join(File.dirname(__FILE__)) }
 
@@ -113,14 +117,11 @@ File.open(File.join(File.dirname(__FILE__), 'test.log'), 'w') do |file|
   silence_warnings { RAILS_DEFAULT_LOGGER = Rails.logger }
 end
 
-# Initialize the rails application
-#SimpleCaptcha::Application.initialize! if Rails.version >= '3.0.0'
-
 require 'active_support/dependencies'
 
 # setup auto loading as would happen in Rails :
 autoload_paths =
-  if ActiveSupport::Dependencies.respond_to? :load_paths
+  if ActiveSupport::Dependencies.respond_to?(:load_paths)
     ActiveSupport::Dependencies.load_paths
   else
     ActiveSupport::Dependencies.autoload_paths # 3.0+
@@ -128,3 +129,6 @@ autoload_paths =
 autoload_paths << File.join(File.dirname(__FILE__), '..', 'lib')
 autoload_paths << File.join(File.dirname(__FILE__), '..', 'app/controllers')
 autoload_paths << File.join(File.dirname(__FILE__), '..', 'app/models')
+
+# Initialize the rails application
+SimpleCaptcha::Application.initialize! if Rails.version >= '3.0.0'

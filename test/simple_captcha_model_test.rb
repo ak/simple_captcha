@@ -1,10 +1,6 @@
 
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-ActiveRecord::Migration.verbose = false # quiet down the migration engine
-ActiveRecord::Base.configurations = { 'test' => {
-  'adapter' => 'sqlite3', 'database' => ':memory:'
-}}
 ActiveRecord::Base.establish_connection('test')
 ActiveRecord::Base.silence do
   ActiveRecord::Schema.define(:version => 0) do
@@ -97,17 +93,17 @@ class SimpleCaptchaModelTest < ActiveSupport::TestCase
   test 'captcha validations might be disabled for class' do
     user = UserWithCaptcha.new :name => 'cicinbrus'
     begin
-      UserWithCaptcha.validates_captcha = false
+      UserWithCaptcha.captcha_validation = false
       assert user.valid?
       assert UserWithCaptcha.new(:name => 'cicinbrus').valid?
     ensure
-      UserWithCaptcha.validates_captcha = true
+      UserWithCaptcha.captcha_validation = true
     end
   end
 
   test 'captcha validations might be disabled for block' do
     user = UserWithCaptcha.new :name => 'cicinbrus'
-    user.validates_captcha(false) do
+    user.captcha_validation(false) do
       assert user.valid?
       assert ! UserWithCaptcha.new(:name => 'cicinbrus').valid?
     end
@@ -115,11 +111,11 @@ class SimpleCaptchaModelTest < ActiveSupport::TestCase
 
   test 'disabling validations is not class inherited' do
     begin
-      UserWithCaptcha.validates_captcha = false
+      UserWithCaptcha.captcha_validation = false
       assert UserWithCaptcha.new(:name => 'cicina').valid?
       assert ! InheritedUser.new(:name => 'cicina').valid?
     ensure
-      UserWithCaptcha.validates_captcha = true
+      UserWithCaptcha.captcha_validation = true
     end
   end
 
@@ -127,16 +123,16 @@ class SimpleCaptchaModelTest < ActiveSupport::TestCase
     user = UserWithCaptcha.new :name => 'pejko'
     begin
       assert ! user.valid?
-      UserWithCaptcha.validates_captcha = false
+      UserWithCaptcha.captcha_validation = false
       assert user.valid?
-      user.validates_captcha(true) do
+      user.captcha_validation(true) do
         assert ! user.valid?
         assert UserWithCaptcha.new(:name => 'hujko').valid?
       end
       assert user.valid?
       assert UserWithCaptcha.new(:name => 'tutko').valid?
     ensure
-      UserWithCaptcha.validates_captcha = true
+      UserWithCaptcha.captcha_validation = true
     end
   end
 

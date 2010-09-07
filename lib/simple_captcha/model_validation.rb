@@ -25,7 +25,9 @@ module SimpleCaptcha #:nodoc
       
       def validates_captcha(options = {})
         orig_options = options
-        options = { :message => "Secret Code did not match with the Image" }
+        # AR by default looks into the following i18n scope :
+        # :'activerecord.errors.messages.record_invalid'
+        options = { :message => :captcha }
         options.update(orig_options)
 
         attr_accessor :captcha, :captcha_key 
@@ -33,7 +35,7 @@ module SimpleCaptcha #:nodoc
 
         validate = respond_to?(:validation_method) ? validation_method(options[:on]) : :validate
         send(validate, options) do |record|
-          if ! record.validates_captcha?
+          if !record.captcha_validation?
             true
           elsif record.captcha_is_valid?
             true
@@ -47,19 +49,19 @@ module SimpleCaptcha #:nodoc
         end
       end
 
-      def apply_simple_captcha(options = {}) # for backward compatibility
+      def apply_simple_captcha(options = {}) # 4 backward compatibility
         outcome = validates_captcha(options)
-        self.validates_captcha = false
+        self.captcha_validation = false
         include SimpleCaptcha::ModelValidation::SaveWithCaptcha
         outcome
       end
 
-      def validates_captcha?
-        defined?(@_validates_captcha) ? @_validates_captcha : true
+      def captcha_validation?
+        defined?(@_captcha_validation) ? @_captcha_validation : true
       end
 
-      def validates_captcha=(validates)
-        @_validates_captcha = validates
+      def captcha_validation=(flag)
+        @_captcha_validation = flag
       end
 
     end
@@ -70,20 +72,20 @@ module SimpleCaptcha #:nodoc
         SimpleCaptcha::CaptchaUtils.simple_captcha_matches?(captcha, captcha_key)
       end
 
-      def validates_captcha?
-        if defined?(@_validates_captcha) && ! @_validates_captcha.nil?
-          @_validates_captcha
+      def captcha_validation?
+        if defined?(@_captcha_validation) && ! @_captcha_validation.nil?
+          @_captcha_validation
         else
-          self.class.validates_captcha?
+          self.class.captcha_validation?
         end
       end
 
-      def validates_captcha(flag = true)
-        prev = @_validates_captcha
-        @_validates_captcha = flag
+      def captcha_validation(flag = true)
+        prev = @_captcha_validation
+        @_captcha_validation = flag
         if block_given?
           outcome = yield
-          @_validates_captcha = prev
+          @_captcha_validation = prev
         end
         outcome
       end
@@ -92,17 +94,17 @@ module SimpleCaptcha #:nodoc
 
     module SaveWithCaptcha
 
-      if defined? ActiveModel && ActiveModel::VERSION::MAJOR >= 3
+      if defined?(ActiveModel) && ActiveModel::VERSION::MAJOR >= 3
 
         def save_with_captcha(options = {})
           options[:validate] = true unless options.has_key?(:validate)
-          validates_captcha(true) { save(options) }
+          captcha_validation(true) { save(options) }
         end
 
       else
 
         def save_with_captcha
-          validates_captcha(true) { save }
+          captcha_validation(true) { save }
         end
 
       end

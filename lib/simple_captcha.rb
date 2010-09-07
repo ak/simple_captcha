@@ -1,11 +1,12 @@
 
 require 'simple_captcha/captcha_utils'
 require 'simple_captcha/image_helpers'
-require 'simple_captcha/controller_helpers'
-require 'simple_captcha/model_helpers'
 require 'simple_captcha/view_helpers'
+#require 'simple_captcha/controller_validation'
+#require 'simple_captcha/model_validation'
 
-ActiveRecord::Base.extend SimpleCaptcha::ModelHelpers::ClassMethods
+#ActiveRecord::Base.extend SimpleCaptcha::ModelHelpers::ClassMethods
+
 ActionView::Base.send :include, SimpleCaptcha::ViewHelpers
 
 if Rails.version < '2.3.0'
@@ -15,15 +16,6 @@ if Rails.version < '2.3.0'
 end
 
 module SimpleCaptcha
-
-#  @@image_path = nil
-#  def self.image_path
-#    @@image_path ||= "#{RAILS_ROOT}/vendor/plugins/simple_captcha/assets/images/simple_captcha/"
-#  end
-#
-#  def self.image_path=(image_path)
-#    @@image_path = image_path
-#  end
 
   @@image_options = {
       :image_color => 'white',
