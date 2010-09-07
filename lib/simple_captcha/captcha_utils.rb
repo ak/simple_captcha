@@ -10,8 +10,7 @@ module SimpleCaptcha #:nodoc
     end
 
     def self.simple_captcha_matches?(captcha, key)
-      value = simple_captcha_value(key)
-      captcha && value == captcha.delete(" ").upcase
+      captcha && captcha.delete(" ").upcase == simple_captcha_value(key)
     end
 
     def self.simple_captcha_passed!(key)

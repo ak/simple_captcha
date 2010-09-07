@@ -1,8 +1,12 @@
 # Copyright (c) 2008 [Sur http://expressica.com]
 
 module SimpleCaptcha #:nodoc
-  module ModelHelpers #:nodoc
-    
+  module ModelValidation #:nodoc
+
+    def self.included(base)
+      base.extend ClassMethods
+    end
+
     # To implement model based simple captcha use this method in the model as...
     #
     #  class User < ActiveRecord::Base
@@ -20,22 +24,24 @@ module SimpleCaptcha #:nodoc
     module ClassMethods
       
       def validates_captcha(options = {})
-        configuration = { :on      => :save,
-                          :message => "Secret Code did not match with the Image" }
-        configuration.update(options)
+        orig_options = options
+        options = { :message => "Secret Code did not match with the Image" }
+        options.update(orig_options)
 
         attr_accessor :captcha, :captcha_key 
-        include SimpleCaptcha::ModelHelpers::InstanceMethods
-        send(validation_method(configuration[:on]), configuration) do |record|
+        include SimpleCaptcha::ModelValidation::InstanceMethods
+
+        validate = respond_to?(:validation_method) ? validation_method(options[:on]) : :validate
+        send(validate, options) do |record|
           if ! record.validates_captcha?
             true
           elsif record.captcha_is_valid?
             true
-          elsif configuration[:add_to_base]
-            record.errors.add_to_base(configuration[:message])
+          elsif options[:add_to_base]
+            record.errors.add_to_base(options[:message])
             false
           else
-            record.errors.add(:captcha, configuration[:message])
+            record.errors.add(:captcha, options[:message])
             false
           end
         end
@@ -44,7 +50,7 @@ module SimpleCaptcha #:nodoc
       def apply_simple_captcha(options = {}) # for backward compatibility
         outcome = validates_captcha(options)
         self.validates_captcha = false
-        include SimpleCaptcha::ModelHelpers::SaveWithCaptcha
+        include SimpleCaptcha::ModelValidation::SaveWithCaptcha
         outcome
       end
 
@@ -57,7 +63,7 @@ module SimpleCaptcha #:nodoc
       end
 
     end
-    
+
     module InstanceMethods
 
       def captcha_is_valid?
@@ -101,6 +107,7 @@ module SimpleCaptcha #:nodoc
 
       end
     end
+
 
   end
 end

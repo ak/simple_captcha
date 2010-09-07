@@ -1,7 +1,7 @@
 
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-class SimpleCaptchaConfigTest < ActiveSupport::TestCase
+class SimpleCaptchaBackendTest < ActiveSupport::TestCase
 
   test 'RMagickBackend responds to generate_simple_captcha_image' do
     assert SimpleCaptcha::RMagickBackend.respond_to? :generate_simple_captcha_image
@@ -13,11 +13,8 @@ class SimpleCaptchaConfigTest < ActiveSupport::TestCase
 
   include SimpleCaptcha::ImageHelpers
 
-  def simple_captcha_value(key) # stub
-    'HeLLo'
-  end
-
   test 'RMagickBackend generates image blob' do
+    SimpleCaptcha::CaptchaUtils.stubs(:simple_captcha_value).returns('HeLLo')
     SimpleCaptcha.backend = :RMagick
     
     ret = generate_simple_captcha_image
@@ -27,6 +24,7 @@ class SimpleCaptchaConfigTest < ActiveSupport::TestCase
   end
 
   test 'QuickMagickBackend generates image blob' do
+    SimpleCaptcha::CaptchaUtils.stubs(:simple_captcha_value).returns('HeLLo')
     SimpleCaptcha.backend = :quick_magick
 
     ret = generate_simple_captcha_image

@@ -1,7 +1,7 @@
 # Copyright (c) 2008 [Sur http://expressica.com]
 
 module SimpleCaptcha #:nodoc
-  module ControllerHelpers #:nodoc
+  module ControllerValidation #:nodoc
 
     include SimpleCaptcha::CaptchaUtils
 
