@@ -71,13 +71,13 @@ module SimpleCaptcha #:nodoc
     def show_simple_captcha(options = {})
       simple_captcha_key = self.simple_captcha_key
       options[:field_value] = set_simple_captcha_data(simple_captcha_key, options[:code_type])
-      simple_captcha_options = {
+      @simple_captcha_options = {
          :image => simple_captcha_image(simple_captcha_key, options),
          :label => options[:label] || "(type the code from the image)", # TODO label
          :field => simple_captcha_field(options)
       }
       render :partial => 'simple_captcha/simple_captcha', 
-             :locals => { :simple_captcha_options => simple_captcha_options }
+             :locals => { :simple_captcha_options => @simple_captcha_options }
     end
 
     private
@@ -86,8 +86,8 @@ module SimpleCaptcha #:nodoc
         url = simple_captcha_url(
             :action => 'simple_captcha',
             :simple_captcha_key => simple_captcha_key,
-            :image_style => options[:image_style] || '',
-            :distortion => options[:distortion] || '',
+            :image_style => options[:image_style],
+            :distortion => options[:distortion],
             :time => Time.now.to_i
         )
 

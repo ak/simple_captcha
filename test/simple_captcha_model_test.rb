@@ -42,6 +42,20 @@ class SimpleCaptchaModelTest < ActiveSupport::TestCase
     assert ! user.valid?
   end
 
+  test 'captcha validations run on create' do
+    user = UserWithCaptcha.new :name => 'ferko'
+    assert ! user.save
+    assert user.errors.on(:captcha)
+  end
+
+  test 'captcha validations run on update' do
+    SimpleCaptchaData.create! :key => '1234567890', :value => 'HUU'
+    UserWithCaptcha.create! :name => 'jozko', :captcha => 'HUU', :captcha_key => '1234567890'
+    assert_not_nil user = UserWithCaptcha.find_by_name('jozko')
+    assert ! user.save
+    assert user.errors.on(:captcha)
+  end
+
   test 'captcha validations is skipped when condition is met' do
     user = UserWithCaptcha.new :name => 'jozko'
     assert ! user.valid?
@@ -136,6 +150,38 @@ class SimpleCaptchaModelTest < ActiveSupport::TestCase
     end
   end
 
+  class UserWithCaptchaOnCreate < ActiveRecord::Base
+    include SimpleCaptcha::ModelValidation
+
+    set_table_name 'users'
+
+    validates_captcha :on => :create
+  end
+
+  test 'user with captcha on create is not saved without captcha' do
+    user = UserWithCaptchaOnCreate.new :name => 'cicinbrus'
+    assert ! user.save
+  end
+
+  test 'user with captcha on create is saved with valid captcha' do
+    SimpleCaptchaData.create! :key => '1234567890', :value => 'HELLO'
+
+    user = UserWithCaptchaOnCreate.new :name => 'cicinbrus', :captcha => 'HELLO', :captcha_key => '1234567890'
+    assert user.save
+  end
+
+  test 'user with captcha on create is updated without captcha being validated' do
+    SimpleCaptchaData.create! :key => '1234567890', :value => 'HELLO'
+
+    user = UserWithCaptchaOnCreate.create! :name => 'melisko', :captcha => 'HELLO', :captcha_key => '1234567890'
+    assert_not_nil user = UserWithCaptchaOnCreate.find_by_name('melisko')
+    user.captcha = 'XXX'
+    user.name = 'jepemboha'
+    assert user.save
+    #puts user.errors.inspect
+    assert_nil UserWithCaptchaOnCreate.find_by_name('melisko')
+  end
+
   class UserWithCaptchaBackwardCompatible < ActiveRecord::Base
     include SimpleCaptcha::ModelValidation
     set_table_name 'users'
@@ -173,7 +219,7 @@ class SimpleCaptchaModelTest < ActiveSupport::TestCase
              :captcha => 'QWERTY', :captcha_key => '1234567890'
     assert ! user.save_with_captcha
     assert ! user.errors.blank?
-    assert user.errors.on :captcha
+    assert user.errors.on(:captcha)
     assert_equal 'invalid captcha !', user.errors.on(:captcha)
   end
 

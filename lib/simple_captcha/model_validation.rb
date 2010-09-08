@@ -33,7 +33,12 @@ module SimpleCaptcha #:nodoc
         attr_accessor :captcha, :captcha_key 
         include SimpleCaptcha::ModelValidation::InstanceMethods
 
-        validate = respond_to?(:validation_method) ? validation_method(options[:on]) : :validate
+        validate =
+          case (options[:on] || :save)
+            when :save   then :validate
+            when :create then :validate_on_create
+            when :update then :validate_on_update
+          end
         send(validate, options) do |record|
           if !record.captcha_validation?
             true

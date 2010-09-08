@@ -30,6 +30,8 @@ backend as required (or create it's own backend if in the need).
 
 See SETUP / STEP 4 bellow for how to configure the backend.
 
+Besides the plugin now works under Rails 3.0.0+ as well as Rails 2.2.3+ !
+
 
 Other Updates
 -------------
@@ -55,6 +57,25 @@ To disable the validations in test mode, You should now state it explicitly:
 
 NOTE: This will validate captcha every-time You do a `user.save` !
 
+There's an API that allows You to (temporary) disable captcha validation for
+classes, individual instances or even blocks :
+
+    User.captcha_validation = false # disables validation globally
+    user = User.new
+    ...
+    # force captcha validation for the given instance and block
+    user.captcha_validation(true) do
+      user.save!
+    end
+    ...
+    # enable captcha validation for the given instance
+    user.captcha_validation(true)
+    user.save
+    ...
+    # reset captcha validation - fallback to the class setting
+    user.captcha_validation(nil)
+    user.save # validates captcha if User.captcha_validation?
+
 
 Old Validation
 --------------
@@ -65,9 +86,10 @@ a way that it did not validate the captcha on "regular" `save` calls, one has
 to explicitly state captcha validation is desired by calling `save_with_captcha`.
 
     class User < ActiveRecord::Base
-      apply_simple_captcha
+      apply_simple_captcha :message => 'WTF?!'
     end
 
+NOTE: The "old" behavior is emulated using the captcha_validation flags.
 
 SimpleCaptcha
 =============
@@ -153,11 +175,11 @@ without storing on the filesystem.
 
 #### Controller Based
 
-  Include `SimpleCaptcha::ControllerHelpers` into Your captcha validating
+  Include `SimpleCaptcha::ControllerValidation` into Your captcha validating
   controller or put the include into `app/controllers/application.rb`
 
     ApplicationController < ActionController::Base
-      include SimpleCaptcha::ControllerHelpers
+      include SimpleCaptcha::ControllerValidation
     end
 
   in the view file within the form tags add this code
@@ -179,9 +201,12 @@ without storing on the filesystem.
 
     <%= show_simple_captcha(:object=>"user") %>
 
-  and in the model class add this code
+  and in the model class include `SimpleCaptcha::ModelValidation` and setup
+  the validation
 
     class User < ActiveRecord::Base
+      include SimpleCaptcha::ModelValidation
+
       validates_captcha :on => :create, :message => 'invalid captcha'
     end
 
@@ -189,7 +214,9 @@ without storing on the filesystem.
   validation on `save` (one have to call `save_with_captcha`)
 
     class User < ActiveRecord::Base
-      apply_simple_captcha :message => I18n.t(:'invalid_captcha')
+      include SimpleCaptcha::ModelValidation
+      
+      apply_simple_captcha :message => :'invalid_captcha'
     end
 
 

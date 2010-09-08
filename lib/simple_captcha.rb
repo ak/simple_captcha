@@ -6,7 +6,6 @@ require 'simple_captcha/view_helpers'
 #require 'simple_captcha/model_validation'
 
 #ActiveRecord::Base.extend SimpleCaptcha::ModelHelpers::ClassMethods
-
 ActionView::Base.send :include, SimpleCaptcha::ViewHelpers
 
 if Rails.version < '2.3.0'

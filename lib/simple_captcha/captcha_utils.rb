@@ -36,7 +36,9 @@ module SimpleCaptcha #:nodoc
     end
 
     def generate_simple_captcha_key
-      session_id = session[:id] || session.session_id
+      session_id = session[:id] || 
+        request.respond_to?(:session_options) ?
+          request.session_options[:id] : session.session_id
       Digest::SHA1.hexdigest(Time.now.to_s + session_id.to_s)
     end
 
