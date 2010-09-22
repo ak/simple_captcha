@@ -1,6 +1,7 @@
 
 require 'rubygems'
 require 'test/unit'
+require 'mocha'
 require 'fileutils'
 
 require File.expand_path('rails_setup', File.dirname(__FILE__))

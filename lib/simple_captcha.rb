@@ -5,14 +5,20 @@ require 'simple_captcha/view_helpers'
 #require 'simple_captcha/controller_validation'
 #require 'simple_captcha/model_validation'
 
+if Rails.version < '2.3.0'
+  $LOAD_PATH << File.expand_path('../app/controllers', File.dirname(__FILE__))
+  $LOAD_PATH << File.expand_path('../app/models', File.dirname(__FILE__))
+  #load_paths = ActiveSupport::Dependencies.load_paths
+  #load_paths << File.expand_path('../app/controllers', File.dirname(__FILE__))
+  #load_paths << File.expand_path('../app/models', File.dirname(__FILE__))
+end
+
+# NOTE: these are on the $LOAD_PATH but not autoloaded in Rails 2.3 :
+require 'simple_captcha_data' # _plugin_/app/models
+require 'simple_captcha_controller' # _plugin_/app/controllers
+
 #ActiveRecord::Base.extend SimpleCaptcha::ModelHelpers::ClassMethods
 ActionView::Base.send :include, SimpleCaptcha::ViewHelpers
-
-if Rails.version < '2.3.0'
-  load_paths = ActiveSupport::Dependencies.load_paths
-  load_paths << File.expand_path('../app/controllers', File.dirname(__FILE__))
-  load_paths << File.expand_path('../app/models', File.dirname(__FILE__))
-end
 
 module SimpleCaptcha
 
@@ -51,6 +57,9 @@ module SimpleCaptcha
   end
 
   def self.backend=(backend)
+    if backend.nil?
+      return @@backend = nil
+    end
     if backend.is_a?(Symbol) || backend.is_a?(String)
       backend = backend.to_s.camelize
       backend_const = const_get(backend + 'Backend') rescue nil

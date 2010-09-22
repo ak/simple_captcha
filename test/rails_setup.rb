@@ -45,6 +45,8 @@ if version >= '3.0.0'
 
 else
 
+  require 'jdbc_adapter' if defined?(JRUBY_VERSION)
+
   ActiveRecord::Base.configurations = { 'test' => {
     'adapter' => 'sqlite3', 'database' => ':memory:'
   }}
@@ -126,9 +128,15 @@ autoload_paths =
   else
     ActiveSupport::Dependencies.autoload_paths # 3.0+
   end
-autoload_paths << File.join(File.dirname(__FILE__), '..', 'lib')
-autoload_paths << File.join(File.dirname(__FILE__), '..', 'app/controllers')
-autoload_paths << File.join(File.dirname(__FILE__), '..', 'app/models')
+autoload_paths << File.join(File.dirname(__FILE__), '../lib')
+#autoload_paths << File.join(File.dirname(__FILE__), '../app/controllers')
+#autoload_paths << File.join(File.dirname(__FILE__), '../app/models')
+
+if Rails.version >= '2.3.0'
+  # Rails 2.3+ does this automatically for _plugins_ :
+  $LOAD_PATH << File.expand_path('../app/controllers', File.dirname(__FILE__))
+  $LOAD_PATH << File.expand_path('../app/models', File.dirname(__FILE__))
+end
 
 # Initialize the rails application
 SimpleCaptcha::Application.initialize! if Rails.version >= '3.0.0'

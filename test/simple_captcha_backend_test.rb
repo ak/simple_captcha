@@ -1,5 +1,5 @@
 
-require File.join(File.dirname(__FILE__), 'test_helper')
+require File.expand_path('test_helper', File.dirname(__FILE__))
 
 class SimpleCaptchaBackendTest < ActiveSupport::TestCase
 
@@ -13,6 +13,8 @@ class SimpleCaptchaBackendTest < ActiveSupport::TestCase
 
   include SimpleCaptcha::ImageHelpers
 
+unless defined?(JRUBY_VERSION)
+
   test 'RMagickBackend generates image blob' do
     SimpleCaptcha::CaptchaUtils.stubs(:simple_captcha_value).returns('HeLLo')
     SimpleCaptcha.backend = :RMagick
@@ -22,6 +24,8 @@ class SimpleCaptchaBackendTest < ActiveSupport::TestCase
     assert_not_nil ret
     assert_instance_of String, ret
   end
+
+end
 
   test 'QuickMagickBackend generates image blob' do
     SimpleCaptcha::CaptchaUtils.stubs(:simple_captcha_value).returns('HeLLo')

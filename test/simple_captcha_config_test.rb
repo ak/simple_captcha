@@ -1,7 +1,11 @@
 
-require File.join(File.dirname(__FILE__), 'test_helper')
+require File.expand_path('test_helper', File.dirname(__FILE__))
 
 class SimpleCaptchaConfigTest < ActiveSupport::TestCase
+
+  setup do
+    SimpleCaptcha.backend = nil
+  end
 
   test 'backend configuration defaults to RMagick' do
     assert_not_nil SimpleCaptcha.backend

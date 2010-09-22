@@ -142,9 +142,9 @@ The setup will depend on the version of rails your application is using.
 
     rake db:migrate
 
-#### STEP 3
+#### STEP 3 (required only for Rails < 2.3.0)
   
-  add the following code into `config/routes.rb` (required only for Rails 2.x)
+  add the following code into `config/routes.rb` :
     
     ActionController::Routing::Routes.draw do |map|
       map.simple_captcha '/simple_captcha/:action', :controller => 'simple_captcha'

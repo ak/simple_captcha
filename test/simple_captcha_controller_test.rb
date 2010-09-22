@@ -1,5 +1,5 @@
 
-require File.join(File.dirname(__FILE__), 'test_helper')
+require File.expand_path('test_helper', File.dirname(__FILE__))
 
 ActiveRecord::Base.establish_connection('test')
 ActiveRecord::Base.silence do
