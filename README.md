@@ -1,5 +1,5 @@
 
-This code is a fork <http://github.com/eshopworks/simple_captcha>
+This code is a fork <http://github.com/kares/simple_captcha>
 
 Website: <http://expressica.com/simple_captcha/>
 

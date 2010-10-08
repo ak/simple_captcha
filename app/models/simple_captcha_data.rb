@@ -1,7 +1,11 @@
 # Copyright (c) 2008 [Sur http://expressica.com]
 
-class SimpleCaptchaData < ActiveRecord::Base
-  set_table_name "simple_captcha_data"
+class SimpleCaptchaData
+  include Mongoid::Document
+  include Mongoid::Timestamps
+
+  field :key,     :type => String, :limit => 40
+  field :value,   :type => String, :limit => 20
   
   class << self
     def get_data(key)
@@ -17,6 +21,10 @@ class SimpleCaptchaData < ActiveRecord::Base
     def clear_old_data(time = 1.hour.ago)
       return unless Time === time
       destroy_all("updated_at < '#{time.to_s(:db)}'")
+    end
+    
+    def find_by_key(key)
+      find(:first, :conditions => { :key => key})
     end
   end
   
