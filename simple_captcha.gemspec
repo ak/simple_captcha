@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.summary = "SimpleCaptcha is the simplest and a robust captcha plugin"
   s.files = Dir.glob("{app,lib}/**/*")
   s.homepage = %q{http://expressica.com/simple_captcha/}
-  s.require_paths = ["lib"]
+  s.require_paths = ["app", "lib"]
   s.rubyforge_project = %q{simple_captcha}
   s.rubygems_version = %q{1.3.5}
   s.specification_version = 1
